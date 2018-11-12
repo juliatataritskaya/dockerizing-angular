@@ -1,4 +1,4 @@
-FROM node:11.1.0
+FROM node:11.1.0 as node
 
 WORKDIR /usr
 
@@ -12,5 +12,13 @@ RUN npm install -g @angular/cli@7.0.4
 
 COPY . .
 
-EXPOSE 4200
-CMD ["npm", "start"]
+RUN npm run build
+
+# Stage 2
+FROM nginx:1.13.12-alpine
+
+WORKDIR /usr/share/nginx/html
+
+COPY --from=node /usr/src/dist/angular-docker .
+
+COPY ./nginx.conf /etc/nginx/conf.d/default.conf
